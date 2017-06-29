@@ -1,16 +1,6 @@
 var c = document.getElementById("hud");
 var ctx = c.getContext("2d");
 
-// Create gradient
-//var grd = ctx.createLinearGradient(0,0,200,0);
-//grd.addColorStop(0,"red");
-//grd.addColorStop(1,"white");
-
-// Fill with gradient
-//ctx.fillStyle = grd;
-//ctx.fillRect(10,10,150,80);
-
-//----------
 
 var spriteObject =
 {
@@ -39,7 +29,7 @@ sprites.push(outerMeter);
 
 //Create the inner health meter 
 var innerMeter = Object.create(spriteObject);
-innerMeter.sourceY = 85;
+innerMeter.sourceY = 84;
 innerMeter.x = outerMeter.x;
 innerMeter.y = outerMeter.y;
 sprites.push(innerMeter);
@@ -52,8 +42,10 @@ sprites.push(outerScore);
 
 //Score innter meter
 var innerScore = Object.create(spriteObject);
-innerScore.sourceY = 170;
+innerScore.sourceY = 171;
 innerScore.x = outerScore.x;
+//innerScore.sourceWidth = 200;  //just for check position
+//innerScore.width = 200;       //just for check position
 sprites.push(innerScore);
 
 //Load the image
@@ -85,7 +77,6 @@ if(function collisionCheck(player, trucks){}){
       innerMeter.sourceWidth--;
       console.log(innerMeter.width);
     }
-  
     if(innerMeter.width < 1)
      {
     //gameOver.display;
