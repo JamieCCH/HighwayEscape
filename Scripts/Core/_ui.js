@@ -7,11 +7,6 @@ uiFrame.style.display = "none";
 //game.style.display = "none";
 
 
-var loseHealth = new Event("loseHealth"); //NG
-var gainHealth = new Event("gainHealth");
-var gainScore = new Event("gainScore");
-var noHP = new Event("noHP");
-
 
 //-------------------
 //The start menu
@@ -95,37 +90,32 @@ function checkPos(mouseEvent){
       mouseY = mouseEvent.offsetY;
     }
 
-    for(i = 0; i < buttonX.length;i++){
-      var btX = (Math.floor((buttonX[i]/worldWidth)*menuWidth));
-      var btY = (Math.floor((buttonY[i]/worldWidth)*menuWidth));
-      var btWidth = (buttonWidth[i]/worldWidth)*menuWidth;
-      var btHeight = (buttonHeight[i]/worldWidth)*menuWidth;
-      // btX, btY detail explanation in line 39
-
-    if(mouseX > btX && mouseX < btX + btWidth && mouseY > btY && mouseY < btY + btHeight)
-      {
+    for(i = 0; i < buttonX.length; i++){
+        var btX = (Math.floor((buttonX[i]/worldWidth)*menuWidth));
+        var btY = (Math.floor((buttonY[i]/worldWidth)*menuWidth));
+        // btX, btY detail explanation in line 39
+      if(mouseX > btX && mouseX < btX + buttonWidth[i]){
+				if(mouseY > btY && mouseY < btY + buttonHeight[i])
+        {
+					arrowSignVisible = true;
+					arrowSignX = buttonX[i] - arrowSignWidth;
+					arrowSignY = buttonY[i];
+          startCtx.drawImage(arrowImage, arrowSignX, arrowSignY);
+          startCtx.drawImage(btOverImage[i], buttonX[i], buttonY[i],buttonWidth[i],buttonHeight[i]);
+          startCanvas.style.cursor = 'pointer';
+          //console.log("mouseX, Y= " + mouseX + " / " + mouseY);
+          //console.log("bt X Y = " + btX + " / " + btY);
+          //console.log("arrow"+" "+ arrowSignX + "/"+ arrowSignY);
+				}
+			}else{
+        if(arrowSignVisible == true){
+          startCtx.drawImage(btUpImage[i],buttonX[i], buttonY[i]);
           startCtx.clearRect(arrowSignX, arrowSignY, arrowSignWidth, arrowSignHeight);
-              if(arrowSignVisible == false)
-                  {
-                      console.log("in bt "+i);
-                      console.log("bt"+i+" X = " + (Math.floor((buttonX[i]/worldWidth)*menuWidth)));
-                      console.log("bt"+i+" Y = " + (Math.floor((buttonY[i]/worldWidth)*menuWidth)));
-                      
-                      arrowSignX = buttonX[i] - arrowSignWidth;
-                      arrowSignY = buttonY[i];
-                      startCtx.drawImage(arrowImage, arrowSignX, arrowSignY);
-                      arrowSignVisible = true;
-                      startCanvas.style.cursor = "pointer";
-                  }
-      }else
-      {
-          if(arrowSignVisible == true)
-             {   
-              console.log("out bt "+i);
-              arrowSignVisible = false;
-              };
-      }
-  }
+          startCanvas.style.cursor = 'default';
+          arrowSignVisible = false;
+        }
+			}
+		}
 }
 
 function checkClick(mouseEvent){
@@ -165,6 +155,9 @@ function newGame(){
 //-------------------
 //UI frame and HUD
 //-------------------
+
+var health = 70;
+var wound = 10;
 
 var c = document.getElementById("hud");
 var ctx = c.getContext("2d");
@@ -230,10 +223,15 @@ function uiUpdate(){
   window.addEventListener("keydown", onKeyDown);
 }
 
-window.addEventListener("loseHealth", function(e){innerMeter.width -=18; innerMeter.sourceWidth -=18; render();})  //NG
-window.addEventListener("gainHealth", function(e){innerMeter.width +=18; innerMeter.sourceWidth +=18; render();})
-window.addEventListener("gainScore", function(e){innerScore.width += 8; innerScore.sourceWidth += 8;  render();})
-window.addEventListener("noHP", function(e){gameOver();loseCanvas.style.display = "block";});
+/*
+if car and truk collision
+innerMeter.width--;
+innerMeter.sourceWidth--;
+
+if car and pickup collision
+innerScore.width++;
+innerScore.sourceWidth++;
+*/
 
 function onKeyDown(event)  //HUD cheat codes
 {
@@ -246,50 +244,22 @@ function onKeyDown(event)  //HUD cheat codes
                 paused = false;
             
             createjs.Ticker.addEventListener("tick", update);
-
             uiFrame.style.display = "block";
             game.style.display ="block";
             startCanvas.style.display = "none";
             loseCanvas.style.display = "none";
             
-            console.log("open");
   	case 73: // I key, to increase health
-            if(innerMeter.width < 240 && paused == false)
-            {
-              innerMeter.width += 10;
-              innerMeter.sourceWidth += 10;
-              render();
-              console.log("width = "+innerMeter.width);
-              console.log("sourceWidth = "+innerMeter.sourceWidth);
-            }
+            addHealth();
             break;
 		case 75: // K key, to decrease health
-            if(innerMeter.width > 65 && paused == false)
-            {
-              innerMeter.width -=25;
-              innerMeter.sourceWidth -=25;
-              render();
-              console.log("width = "+innerMeter.width);
-              console.log("sourceWidth = "+innerMeter.sourceWidth);
-            }if(innerMeter.width <=65 && paused == false)
-            {
-            //game over screen
-            loseCanvas.style.display = "block";
-            gameOver();
-            }
+            deHealth();
             break;
-    case 76: // J key, to increase score
-            if(innerScore.width < 232 && paused == false)
-            {
-              innerScore.width += 2;
-              innerScore.sourceWidth += 2;
-              render();
-              console.log("score width = "+innerScore.width);
-              console.log("score sourceWidth = "+innerScore.sourceWidth);
-            }
+    case 76: // L key, to increase score
+            scoreUp();
             break;
 // we don't have the situation to decrease scores so far (maybe add in level 2 when hit the animals?)
-		case 74: // L key, to decrease score
+		case 74: // J key, to decrease score
             if(innerScore.width > 56 && paused == false)
             {
               innerScore.width -=2;
@@ -304,6 +274,44 @@ function onKeyDown(event)  //HUD cheat codes
 				console.log("cheat code unhandled key.");
 				break;
   }
+}
+
+function addHealth(){
+  if(innerMeter.width < 240 && paused == false)
+            {
+              innerMeter.width += 10;
+              innerMeter.sourceWidth += 10;
+              render();
+              console.log("width = "+innerMeter.width);
+              console.log("sourceWidth = "+innerMeter.sourceWidth);
+            }
+}
+
+function deHealth(){
+  if(innerMeter.width > 65 && paused == false){
+      innerMeter.width -=25;
+      innerMeter.sourceWidth -=25;
+      render();
+      health -= wound;
+      console.log("width = "+innerMeter.width);
+      console.log("sourceWidth = "+innerMeter.sourceWidth);
+  }
+  if(innerMeter.width <=65 && paused == false){
+    //game over screen
+    loseCanvas.style.display = "block";
+    gameOver();
+  }
+}
+
+function scoreUp(){
+  if(innerScore.width < 232 && paused == false)
+            {
+              innerScore.width += 0.1;            //set a variable for pickup
+              innerScore.sourceWidth += 0.1;
+              render();
+              //console.log("score width = "+innerScore.width);
+              //console.log("score sourceWidth = "+innerScore.sourceWidth);
+            }
 }
 
 function render() {
@@ -362,7 +370,7 @@ function gameOver(){
   loseCtx.drawImage(crashImage, 130, 100);
   loseCtx.drawImage(newImage, endBtX[0], endBtY[0]);
   loseCtx.drawImage(exitImage, endBtX[1], endBtY[1]);
-
+  clearInterval(timeCount);
   if( paused == false ){
       paused = true;
     }	else	
