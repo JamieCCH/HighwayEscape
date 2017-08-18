@@ -68,6 +68,14 @@ function initImg()
 	hitTruckImage.x = player.image.x+10;
 	hitTruckImage.y = player.image.y+10;
 	stage.addChild(hitTruckImage);
+
+	carLight = new createjs.Bitmap("Assets/images/img_carLight.png");
+	carLight.visible = false;
+	stage.addChild(carLight);
+
+	truckLight = new createjs.Bitmap("Assets/images/img_carLight.png");
+	truckLight.visible = false;
+	stage.addChild(truckLight);
 }
 
 function update()
@@ -79,6 +87,9 @@ function update()
 		setImageLayeringOrder();
 		if(isAlive())
 		{
+			carLight.x = player.image.x-8;
+			carLight.y = player.image.y-70;
+
 			if(!freeze )
 			{
 				moveTrucks();
@@ -94,7 +105,6 @@ function update()
 					hitTruckImage.y = player.image.y+10;
 					hurtPlayer();
 				}
-				
 		}
 		else
 		{
@@ -398,6 +408,7 @@ function movePlayer()
 function handleTurning()
 {
 	var r = player.image.rotation;
+	var l = carLight.rotation;
 
 	var max;
 	if(upPressed)
@@ -409,37 +420,51 @@ function handleTurning()
 	
 	if(((rightPressed && leftPressed) || (!rightPressed && !leftPressed)) && r != 0)
 	{
-		if(r < 0)
+		if(r < 0){
 			r += turnSpeed;
-		else
+			l += turnSpeed;
+		}
+		else{
 			r -= turnSpeed;
+			l -= turnSpeed;
+		}
+		
 	}
 	else
 	{
 		if(leftPressed)
 		{
+			carLight.x = player.image.x-35;
+			carLight.y = player.image.y-60;
 			if(r < -max)
 			{
 				r += turnSpeed;
+				l += turnSpeed;
 			}
 			else if(r > -max)
 			{
 				r-= turnSpeed;
+				l -= turnSpeed;
 			}
 		}
 		if(rightPressed)
 		{
+			carLight.x = player.image.x+13;
+			carLight.y = player.image.y-60;
 			if(r > max)
 			{
 				r -= turnSpeed;
+				l -= turnSpeed;
 			}
 			else if(r < max)
 			{
 				r+= turnSpeed;
+				l += turnSpeed;
 			}
 		}
 	}
 	player.image.rotation = r;
+	carLight.rotation = l;
 }
 
 function getPlayerMoveDirection()
@@ -538,6 +563,8 @@ function moveTrucks()
 				firstTruckY = trucks[lane][pos].image.y + 150;
 				//lazy and no time to set the variable, hard code for half of truck img with and heigh
 				showDodgeTruck();
+				truckLight.x = firstTruckX-50;
+				truckLight.y = firstTruckY-210;
 			}
 
 			if(trucks[lane][pos])
@@ -547,7 +574,7 @@ function moveTrucks()
 				{
 					stage.removeChild(trucks[lane][pos].image);
 					trucks[lane].splice(pos,1);
-					
+
 				}
 				else if(trucks[lane][pos].image.y > player.image.y + 100 && trucks[lane][pos].inPlay)
 				{
@@ -569,7 +596,10 @@ function spawnTruck(lane) //spawns a new obstacle in the desired lane.
 	tempTruck.image.x = 140+168*lane;
 	tempTruck.image.y = -200;
 	trucks[lane].push(tempTruck);
-	stage.addChild(tempTruck.image);	
+	stage.addChild(tempTruck.image);
+	stage.addChild(truckLight);	
+	truckLight.x = firstTruckX-50;
+	truckLight.y = firstTruckY-210;
 }
 
 function countTrucksInLane(lane) //Simply tallies the number of trucks in a specific designated lane.
@@ -603,7 +633,7 @@ function countTrucksInPlay() //Tallies how many trucks are currently flagged as 
 
 function canSpawnTrucks()	//Simple gatekeeper function to ensure that there aren't too many obstacles for the player to avoid.
 {
-	if(trucksInPlay < 4 && paused == false && timeSec >= 10) // add one more condition to fix the trucks parallel spawning full lanes at the beginning.
+	if(trucksInPlay < 4 && paused == false && timeSec >= 1) // add one more condition to fix the trucks parallel spawning full lanes at the beginning.
 		return true;
 	else
 		return false;

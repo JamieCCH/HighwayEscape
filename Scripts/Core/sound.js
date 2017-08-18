@@ -1,9 +1,9 @@
 
 var btSound;
 btSound = new sound("Assets/sound/menu-selection-click.wav");
-//var menuMusic;
-//menuMusic = new sound("Assets/sound/menu.mp3");
-var menuMusic = document.getElementById("bgMusic");
+var menuMusic;
+menuMusic = new sound("Assets/sound/menu.mp3");
+//var menuMusic = document.getElementById("bgMusic");
 var pickupSoud;
 pickupSoud = new sound("Assets/sound/pick_up.mp3");
 var coinSoud;

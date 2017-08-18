@@ -192,9 +192,14 @@ function timer(){
   
   if(timeMin === 3)
     switchIT = setInterval(switchScene,60);
+    
 }
 
 function switchScene(){
+
+  carLight.visible = true;
+  truckLight.visible = true;
+
   if(moon.x <= 830){
     sun.x -= 6;
     sun.y += 1.2;
