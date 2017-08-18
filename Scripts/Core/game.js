@@ -36,6 +36,8 @@ var gainHealth = new Event("gainHealth");
 var gainScore = new Event("gainScore");
 var noHP = new Event("noHP");
 var dirX = 0, dirY = 0;
+var tutoralShown = false;
+var hitTruckImage;
 
 start();
 createjs.Ticker.addEventListener("tick", update);
@@ -46,6 +48,7 @@ function start() //Handles getting the game up and running.
 	generateBackground();
 	initPlayer();
 	buildArray();
+	initImg();
 	window.addEventListener("keydown", onKeyDown);
 	window.addEventListener("keyup", onKeyUp);
 }	
@@ -58,8 +61,18 @@ function initPlayer()
 	stage.addChild(player.image);
 }
 
-function update()
+function initImg()
 {
+	hitTruckImage = new createjs.Bitmap("Assets/images/fbSpark.png");
+	hitTruckImage.visible = false;
+	hitTruckImage.x = player.image.x+10;
+	hitTruckImage.y = player.image.y+10;
+	stage.addChild(hitTruckImage);
+}
+
+function update()
+{	
+
 	if(isRunning && !paused)
 	{
 		trucksInPlay = countTrucksInPlay();
@@ -75,13 +88,20 @@ function update()
 			movePlayer();
 			collisionSweep();
 			if(player.hurt && hurtEffectInterval == null)
-				hurtPlayer();
+				{
+					hitTruckImage.visible = true;
+					hitTruckImage.x = player.image.x+10;
+					hitTruckImage.y = player.image.y+10;
+					hurtPlayer();
+				}
+				
 		}
 		else
 		{
 			dispatchEvent(noHP);
 		}
 	}
+
 	stage.update();
 }
 
@@ -101,7 +121,7 @@ function setImageLayeringOrder()
 	}
 	//Move the player to the top.
 		if(stage.getChildIndex(player.image)< stage.getNumChildren()-1)
-			stage.setChildIndex(player.image, stage.getNumChildren()-1);
+			stage.setChildIndex(player.image, stage.getNumChildren()-1); //-1
 	//Pile the trucks on top of the player.
 	for(var lane = 0; lane < trucks.length; lane++)
 	{
@@ -111,6 +131,10 @@ function setImageLayeringOrder()
 			stage.setChildIndex(trucks[lane][pos], stage.getNumChildren()-1);
 		}
 	}
+
+	if(stage.getChildIndex(hitTruckImage) < stage.getNumChildren()-1)
+			stage.setChildIndex(hitTruckImage, stage.getNumChildren()-1);
+		
 }
 
 
@@ -141,6 +165,18 @@ function buildArray() //turns the 1D array for trucks into a 2D array.
 
 function scrollBackground() //Moves the background
 {
+	//console.log("-----speed add------" + innerScore.width +" " + backgroundSpeed);
+	if(innerScore.width >= 70)//initial=56, +1 = +8, max=232
+		backgroundSpeed = 18;
+
+	if(innerScore.width >= 90)
+		backgroundSpeed = 22;
+
+	if(innerScore.width >= 128) // half of score bar, level one complete
+		backgroundSpeed = 28;
+
+	if(innerScore.width >= 220) // 80% level two complete
+		backgroundSpeed = 35;
 
 	//move the whole background downwards steadily
 	for (var row = 0; row < background.length; row++)
@@ -182,11 +218,18 @@ function trySpawnTrucks()
 	}
 }
 
+
 function trySpawnHealthPickup()
 {
 	var spawned = false;
+	if(timeSec == 1)	//for tutoral
+	{
+		spawnPickup(0);
+		spawned = true;	
+		tutoralShown = true;
+	}
 	var chance = Math.random() * 100;
-	if(chance <= 10 && player.HP < 10 && paused === false)
+	if(chance <= 6 && player.HP < 10 && paused == false && timeSec > 13)
 	{
 		spawnPickup(0);
 		spawned = true;	
@@ -197,12 +240,19 @@ function trySpawnHealthPickup()
 function trySpawnScorePickup()
 {
 	var spawned = false;
+	if(timeSec == 4)	//for tutoral
+		{
+			spawnPickup(1);
+			spawned = true;	
+			tutoralShown = true;
+			console.log("lightning")
+		}
+
 	var chance = Math.random() * 100;
-	if(chance <= 10 && paused === false)
+	if(chance <= 10 && paused == false && timeSec > 10)
 	{
 		spawnPickup(1);
-		spawned = true;
-		
+		spawned = true;	
 	}
 }
 
@@ -214,14 +264,13 @@ function spawnPickup(type)
 	{
 		case 0:
 				tempPickup = {bmp:new createjs.Bitmap("Assets/images/pk_addHealth.png"),type:0};
-				heartNum++;
-				tutoralShown == true;	
+				heartNum++;	
+				//console.log(heartNum);
 				break;
 		case 1:
 				tempPickup = {bmp:new createjs.Bitmap("Assets/images/pk_addScore.png"),type:1};
 				lightningNum++;
-				tutoralShown = true;
-				//console.log(lightningNum);
+				//console.log(heartNum);
 				break;
 		default:
 				console.log("Unhandled key.");
@@ -250,15 +299,18 @@ function movePickups()
 					pickups.splice(i,1);
 			}
 
-			if(pickups[i].bmp.y > gameBounds.top && pickups[i].type === 0){	
+			if(pickups[i].type == 0 && pickups[i].bmp.y > gameBounds.top){	 //top=150
+				
 				pickupY = pickups[i].bmp.y + 25;
 				pickupX = pickups[i].bmp.x + 25;
+				//console.log(heartNum);
+				//console.log(tutoralShown);
 				PickHeart();
 			}	
-			if(pickups[i].bmp.y > gameBounds.top && pickups[i].type === 1){
+			if(pickups[i].bmp.y > gameBounds.top && pickups[i].type == 1){
 				pickupY = pickups[i].bmp.y + 25;
 				pickupX = pickups[i].bmp.x + 25;
-					PickLightning();	
+				PickLightning();	
 			}
 		
 		}
@@ -517,8 +569,7 @@ function spawnTruck(lane) //spawns a new obstacle in the desired lane.
 	tempTruck.image.x = 140+168*lane;
 	tempTruck.image.y = -200;
 	trucks[lane].push(tempTruck);
-	stage.addChild(tempTruck.image);
-	
+	stage.addChild(tempTruck.image);	
 }
 
 function countTrucksInLane(lane) //Simply tallies the number of trucks in a specific designated lane.
@@ -552,7 +603,7 @@ function countTrucksInPlay() //Tallies how many trucks are currently flagged as 
 
 function canSpawnTrucks()	//Simple gatekeeper function to ensure that there aren't too many obstacles for the player to avoid.
 {
-	if(trucksInPlay < 4 && paused == false) // add one more condition to fix the trucks parallel spawning full lanes at the beginning.
+	if(trucksInPlay < 4 && paused == false && timeSec >= 10) // add one more condition to fix the trucks parallel spawning full lanes at the beginning.
 		return true;
 	else
 		return false;
@@ -596,6 +647,7 @@ function collisionSweep()
 				dispatchEvent(gainHealth);
 				stage.removeChild(pickups[i].bmp);
 				pickups.splice(i,1);
+				pickupSoud.play();
 			}
 			else if(pickups[i].type == 1)
 			{
@@ -603,6 +655,7 @@ function collisionSweep()
 				dispatchEvent(gainScore);
 				stage.removeChild(pickups[i].bmp);
 				pickups.splice(i,1);
+				coinSoud.play();
 			}
 			
 		}
@@ -620,27 +673,27 @@ function collisionSweep()
 	  {
 		if((box1.left < box2.right && box1.left > box2.left) && (box1.bottom > box2.top && box1.bottom < box2.bottom))
 		{
-			console.log("lower left of player hit something");
-			console.log("player's left and bottom bounds: " + box1.left + " " + box1.bottom);
-			console.log("object's right and top bounds: "+ box2.right + " " + box2.top);
+			//console.log("lower left of player hit something");
+			//console.log("player's left and bottom bounds: " + box1.left + " " + box1.bottom);
+			//console.log("object's right and top bounds: "+ box2.right + " " + box2.top);
 		}
 		if((box1.right > box2.left && box1.right < box2.right) && (box1.bottom > box2.top && box1.bottom < box2.bottom))
 		{
-			console.log("lower right of player hit something");
-			console.log("player's right and bottom bounds: " + box1.right + " " + box1.bottom);
-			console.log("object's left and top bounds: "+ box2.left + " " + box2.top);
+			//console.log("lower right of player hit something");
+			//console.log("player's right and bottom bounds: " + box1.right + " " + box1.bottom);
+			//console.log("object's left and top bounds: "+ box2.left + " " + box2.top);
 		}
 		if((box1.left < box2.right && box1.left > box2.left) && (box1.top < box2.bottom && box1.top > box2.top))
 		{
-			console.log("top left of player hit something");
-			console.log("player's left and top bounds: " + box1.left + " " + box1.top);
-			console.log("object's right and bottom bounds: "+ box2.right + " " + box2.bottom);
+			//console.log("top left of player hit something");
+			//console.log("player's left and top bounds: " + box1.left + " " + box1.top);
+			//console.log("object's right and bottom bounds: "+ box2.right + " " + box2.bottom);
 		}
 		if((box1.right > box2.left && box1.right < box2.right) && (box1.top < box2.bottom && box1.top > box2.top))
 		{
-			console.log("top right of player hit something");
-			console.log("player's right and top bounds: " + box1.right + " " + box1.top);
-			console.log("object's left and bottom bounds: "+ box2.left + " " + box2.bottom);
+			//console.log("top right of player hit something");
+			//console.log("player's right and top bounds: " + box1.right + " " + box1.top);
+			//console.log("object's left and bottom bounds: "+ box2.left + " " + box2.bottom);
 		}
 		
 		return true;
@@ -656,6 +709,7 @@ function collisionLog(hit)
 	var boxout = "L: " + box.left + ", R: " + box.right + ", T: " + box.top + ", B: " + box.bottom;
 	output += boxout;
 	//console.log(output);
+
 }
 
 function getPlayerBounds(source)
@@ -699,14 +753,21 @@ function addScore()
 
 function hurtEffect()
 {
+	carHit.play();
+	if(stage.getChildIndex(hitTruckImage)>stage.getChildIndex(player.image))
+		stage.setChildIndex(hitTruckImage, stage.getNumChildren()-1);
+
 	if(player.image.alpha == 1)
 		player.image.alpha = 0.5;
 	else
 		player.image.alpha = 1;
-
+		
 	hurtEffectCounter++;
-	if(hurtEffectCounter >= 8)
+	if(hurtEffectCounter >= 8){
 		clearHurtEffect();
+		hitTruckImage.visible = false;
+	}
+		
 }
 
 function hurtPlayer()

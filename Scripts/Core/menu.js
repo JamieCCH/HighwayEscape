@@ -1,11 +1,9 @@
-
 var startCanvas = document.getElementById("start");
 var startCtx = startCanvas.getContext("2d");
 startCanvas.width = 1070;
 startCanvas.height = 1000;
 var helpCanvas = document.getElementById("help");
 var helpCtx = helpCanvas.getContext("2d");
-
 var menuCanvas = document.getElementById("menuHover");
 var menuCtx = menuCanvas.getContext("2d");
 var loseCanvas = document.getElementById("gameOver");;
@@ -18,12 +16,20 @@ var tutorMsgCanvas = document.getElementById("tutorMsg");;
 var msgCtx = tutorMsgCanvas.getContext("2d");
 var tutorMaskCanvas = document.getElementById("tutorMask");
 var MaskCtx = tutorMaskCanvas.getContext("2d");
+var gameCanvas = document.getElementById("game");
+var gameCtx = gameCanvas.getContext("2d");
+var uiCanvas = document.getElementById("uiFrame");
+var uiCtx = uiCanvas.getContext("2d");
+var muteBtCanvas = document.getElementById("forBtn");
+var muteBtCtx = muteBtCanvas.getContext("2d");
 
 var stageW = startCanvas.width;
 var stageH = startCanvas.height;
 var mouseX;
 var mouseY;
 var timeCount = 0;
+
+var musicOn = true;
 
 var button = {
     x:600,
@@ -58,7 +64,24 @@ exit.width = 150;
 exit.y2 = 730 - 54;
 exit.points = [{x:600,y:730},{x:600+150,y:730},{x:600+150,y:730-54},{x:600,y:730-54}];
 buttons.push(exit);
+
+var muteBt = Object.create(button);
+muteBt.x = 980;
+muteBt.y = 930;
+muteBt.width = 81;
+muteBt.height = 76;
+muteBt.x2 = 1061;
+muteBt.y2 = 1006;
+muteBt.points=[{x:980,y:930},{x:980+81,y:930},{x:980+81,y:930+76},{x:980,y:930+76}];
+muteBt.image = new Image();
+muteBt.image.addEventListener("load", loadHandler, false);
+muteBt.image.src = "Assets/images/bt_mute.png";
+
+var gameMuteBt = new Object(); 
+gameMuteBt.points=[{x:990,y:100},{x:990+81,y:100},{x:990+81,y:100+76},{x:990,y:100+76}];
+
 var buttonsText = ["NEW GAME", "HELP", "EXIT"];
+
 var arrowSign = {
     x:0,
     y:0,
@@ -70,10 +93,14 @@ arrowSign.image = new Image();
 arrowSign.image.addEventListener("load", loadHandler, false);
 arrowSign.image.src = "Assets/images/icon_arrowSign.png";
 
-//loadMenu();
+menuCanvas.addEventListener("mousemove", checkPos);
+menuCanvas.addEventListener("click", checkClick);
+muteBtCanvas.addEventListener("mousemove", muteBtOver);
+muteBtCanvas.addEventListener("click", muteBtClick);
 
 function loadMenu(){
-
+    //muteBtCtx.drawImage(muteBt.image,990,100);
+    startCtx.drawImage(muteBt.image,muteBt.x,muteBt.y);
     for(var i = 0; i < buttons.length; i++){
         startCtx.font = "65px RussoOne";
         startCtx.fillStyle = "#ffffff";
@@ -101,15 +128,85 @@ function definePath(p){
     //console.log(p);
 }
 
-menuCanvas.addEventListener("mousemove", checkPos);
-menuCanvas.addEventListener("click", checkClick);
+
+function muteBtOver(mouseEvent){
+
+    mouseX = Math.floor((mouseEvent.offsetX/muteBtCanvas.offsetWidth)*stageW);
+    mouseY = Math.floor((mouseEvent.offsetY/muteBtCanvas.offsetHeight)*stageH);
+
+    var setCursor;
+    var isHover = false;
+
+    muteBtCtx.beginPath();
+    muteBtCtx.moveTo(gameMuteBt.points[0].x,gameMuteBt.points[0].y);
+    for(var i=0;i<gameMuteBt.points.length;i++){
+        muteBtCtx.lineTo(gameMuteBt.points[i].x,gameMuteBt.points[i].y);
+    }
+    muteBtCtx.closePath();
+    
+    if(muteBtCtx.isPointInPath(mouseX,mouseY)){
+        setCursor = "pointer";
+        isHover = true;
+    }
+
+    if(!setCursor && !isHover){
+        muteBtCanvas.style.cursor = "default";   
+    }else{
+        isHover = true;
+        muteBtCanvas.style.cursor = "pointer";           
+    }
+
+}
+
+function muteBtClick(mouseEvent){
+    
+        mouseX = Math.floor((mouseEvent.offsetX/muteBtCanvas.offsetWidth)*stageW);
+        mouseY = Math.floor((mouseEvent.offsetY/muteBtCanvas.offsetHeight)*stageH);
+    
+        var setCursor;
+        var isHover = false;
+    
+        muteBtCtx.beginPath();
+        muteBtCtx.moveTo(gameMuteBt.points[0].x,gameMuteBt.points[0].y);
+        for(var i=0;i<gameMuteBt.points.length;i++){
+            muteBtCtx.lineTo(gameMuteBt.points[i].x,gameMuteBt.points[i].y);
+        }
+        muteBtCtx.closePath();
+        
+        if(muteBtCtx.isPointInPath(mouseX,mouseY)){
+            if(musicOn){
+                musicOn = false;
+                menuMusic.stop();
+                carIdle.stop();
+            }else{
+                musicOn = true;
+                menuMusic.play(); 
+                carIdle.play();
+            }
+        }
+    
+    }
+
 
 function checkPos(mouseEvent){
     mouseX = Math.floor((mouseEvent.offsetX/startCanvas.offsetWidth)*stageW);
     mouseY = Math.floor((mouseEvent.offsetY/startCanvas.offsetHeight)*stageH);
     
     var setCursor;
-    var isHover;
+    var isHover = false;
+
+    startCtx.beginPath();
+    startCtx.moveTo(muteBt.points[0].x,muteBt.points[0].y);
+    for(var i=0;i<muteBt.points.length;i++){
+        startCtx.lineTo(muteBt.points[i].x,muteBt.points[i].y);
+    }
+    startCtx.closePath();
+
+    if(startCtx.isPointInPath(mouseX,mouseY)){
+        setCursor = "pointer";
+        isHover = true;
+    }
+
     for(var i = 0; i < buttons.length; i++){
         var b = buttons[i];
         for(var j=0; j<b.points.length;j++){
@@ -123,20 +220,46 @@ function checkPos(mouseEvent){
             menuCtx.drawImage(arrowSign.image, (b.x-arrowSign.width-10), b.y2);
             setCursor = "pointer";
             isHover = true;
-            break;
+            btSound.play();
         }
     }
     if(!setCursor && !isHover){
         menuCanvas.style.cursor = "default";  
-        menuCtx.clearRect(0,0,stageW,stageH);           
-      }else{
-        menuCanvas.style.cursor = "pointer";              
-      }
+        muteBtCanvas.style.cursor = "default";
+        menuCtx.clearRect(0,0,stageW,stageH);     
+    }else{
+        isHover = true;
+        menuCanvas.style.cursor = "pointer"; 
+        //muteBtCanvas.style.cursor = "pointer";           
+    }
 }
+
 
 function checkClick(mouseEvent){
     mouseX = Math.floor((mouseEvent.offsetX/menuCanvas.offsetWidth)*stageW);
     mouseY = Math.floor((mouseEvent.offsetY/menuCanvas.offsetHeight)*stageH);
+
+    startCtx.beginPath();
+    startCtx.moveTo(muteBt.points[0].x,muteBt.points[0].y);
+    for(var i=0;i<muteBt.points.length;i++){
+        startCtx.lineTo(muteBt.points[i].x,muteBt.points[i].y);
+    }
+    startCtx.closePath();
+    
+    if(startCtx.isPointInPath(mouseX,mouseY)){
+        if(musicOn){
+            musicOn = false;
+            menuMusic.stop();
+            carIdle.stop();
+        }else{
+            musicOn = true;
+            menuMusic.play(); 
+            carIdle.play();
+        }
+        console.log(musicOn);
+    }
+
+
     for(i = 0; i < buttons.length; i++){
         var btn = buttons[i];
         if(mouseX > btn.x && mouseX < btn.x + btn.width){
@@ -146,19 +269,7 @@ function checkClick(mouseEvent){
                     switch(i)
                     {
                         case 0:
-                           var isTutor = false;
-                            if( paused == true ){
-                                paused = false;
-                            }	else	
-                                paused = false;
-
-                            timeCount = setInterval(timer, 1000);
-                            createjs.Ticker.addEventListener("tick", update);
-                            uiFrame.style.display = "block";
-                            game.style.display = "block";
-                            startCanvas.style.display = "none";
-                            menuCanvas.style.display = "none";
-                            
+                            startGame();
                         break;
                         case 1:
                             helpCanvas.style.display = "block";
@@ -171,6 +282,22 @@ function checkClick(mouseEvent){
         }
     }
 } 
+
+function startGame(){
+    if( paused == true ){
+        paused = false;
+    }	else	
+        paused = false;
+    timeCount = setInterval(timer, 1000);
+    muteBtCanvas.style.display = "block";
+    uiFrame.style.display = "block";
+    game.style.display = "block";
+    menuCanvas.style.display = "none";
+    startCanvas.style.display = "none";
+    createjs.Ticker.addEventListener("tick", update);
+    muteBtCtx.drawImage(muteBt.image,990,100);
+    carIdle.play();
+}
 
 
 /*
@@ -194,19 +321,7 @@ function checkClick(mouseEvent){
  }
 */
 
-function newGame(){
-    uiFrame.style.display = "block";
-    game.style.display = "block";
-    menuCanvas.style.display = "none";
-    startCanvas.style.display = "none";
-    createjs.Ticker.addEventListener("tick", update);
-  
-    if( paused == true ){
-      paused = false;
-    }	else	
-      paused = false;
 
-}
 
 /*
   startCtx.beginPath();
@@ -311,13 +426,13 @@ function moveYellowAr(mouseEvent){
         for(var j=0; j< b.points.length; j++){
             dieBtnPath(b.points);        
             if(overCtx.isPointInPath(mouseX,mouseY)){
-
                 overCtx.font = "68px RussoOne";
                 overCtx.fillStyle = '#D6881F';
                 overCtx.fillText(endBtnsTxt[i], endBtns[i].x, endBtns[i].y);
                 overCtx.drawImage(yellowArrow.image, endBtns[i].x - yellowArrow.width - 10, endBtns[i].y - yellowArrow.height);
                 setCursor = "pointer";
                 isHover = true;
+                btSound.play();
                 //console.log("isPointInPath");
                 break;
             }

@@ -12,6 +12,8 @@ var dayCanvas = document.getElementById("dayView");
 var dayCtx = dayCanvas.getContext("2d");
 var nightCanvas = document.getElementById("nightView");
 var nightCtx = nightCanvas.getContext("2d");
+var muteBtCanvas = document.getElementById("forBtn");
+var muteBtCtx = muteBtCanvas.getContext("2d");
 
 var health = 70;
 var wound = 10;
@@ -186,7 +188,10 @@ function timer(){
   }
   if(timeHr === 99){
     paused = true;
-  }   
+  }
+  
+  if(timeMin === 3)
+    switchIT = setInterval(switchScene,60);
 }
 
 function switchScene(){
@@ -300,11 +305,11 @@ function onKeyDown(event)  //HUD cheat codes
     case 76: // J key, to increase score
             if(innerScore.width < 232 && paused == false)
             {
-              innerScore.width += 2;
-              innerScore.sourceWidth += 2;
+              innerScore.width += 8;
+              innerScore.sourceWidth += 8;
               render();
-              console.log("score width = "+innerScore.width);
-              console.log("score sourceWidth = "+innerScore.sourceWidth);
+              //console.log("score width = "+innerScore.width);
+              //console.log("score sourceWidth = "+innerScore.sourceWidth);
             }
             break;
 // we don't have the situation to decrease scores so far (maybe add in level 2 when hit the animals?)
@@ -314,12 +319,11 @@ function onKeyDown(event)  //HUD cheat codes
               innerScore.width -=2;
               innerScore.sourceWidth -=2;
               render();
-              console.log("score width = "+innerScore.width);
-              console.log("score sourceWidth = "+innerScore.sourceWidth);
+              //console.log("score width = "+innerScore.width);
+              //console.log("score sourceWidth = "+innerScore.sourceWidth);
             }
             break;
     case 9: //tab
-    case 78: //N
             switchIT = setInterval(switchScene,60);
             break;
     case 27: //esc

@@ -1,20 +1,34 @@
 
-//if (!createjs.Sound.initializeDefaultPlugins()) { return; }
+var btSound;
+btSound = new sound("Assets/sound/menu-selection-click.wav");
+var menuMusic;
+menuMusic = new sound("Assets/sound/menu.mp3");
+var pickupSoud;
+pickupSoud = new sound("Assets/sound/pick_up.mp3");
+var coinSoud;
+coinSoud = new sound("Assets/sound/coin-pickup.wav");
+var carHit;
+carHit = new sound("Assets/sound/carHit.mp3");
+var carIdle
+carIdle = new sound("Assets/sound/carIdle.mp3");
 
-var audioPath = "../Assets/sound/";
-var sounds = [
-    {id:"Menu", src:"menu.mp3"},
-   // {id:"Thunder", src:"Thunder1.ogg"}
-];
+initGameSound();
 
-createjs.Sound.alternateExtensions = ["mp3"];
+function initGameSound() {
+  menuMusic.play();
+}
 
-function init() {
-  // create an array and audioPath (above)
-  createjs.Sound.addEventListener("fileload", handleLoad);
-  createjs.Sound.registerSounds(sounds, audioPath);
- }
-
- function handleLoad(event) {
-  createjs.Sound.play(event.src);
+function sound(src) {
+  this.sound = document.createElement("audio");
+  this.sound.src = src;
+  this.sound.setAttribute("preload", "auto");
+  this.sound.setAttribute("controls", "none");
+  this.sound.style.display = "none";
+  document.body.appendChild(this.sound);
+  this.play = function(){
+      this.sound.play();
+  }
+  this.stop = function(){
+      this.sound.pause();
+  }    
 }

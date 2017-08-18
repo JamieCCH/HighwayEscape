@@ -1,7 +1,6 @@
 var trukNum = 0;
 var lightningNum = 0;
 var heartNum = 0;
-var tutoralShown = false;
 var firstTruckX = 0;
 var firstTruckY = 0;
 var pickupX = 0;
@@ -100,7 +99,6 @@ var PickLightning = (function() {
 				msgCtx.fillText("Pick Up Lightnig to Increase Scores",10,880);
 */
 				msgCtx.drawImage(tutoralMsg02,10,800);
-
 				MaskCtx.fillStyle = "rgba(51, 51, 51, 0.6)";
 				MaskCtx.fillRect(0,0,stageW,stageW)
 				//MaskCtx.beginPath();
@@ -108,7 +106,6 @@ var PickLightning = (function() {
 				//MaskCtx.stroke();
 				//MaskCtx.clip();
 				//MaskCtx.clearRect(0,0,stageW,stageW)			
-				
 				clearCircle(MaskCtx,/*x=*/pickupX,/*y=*/pickupY,/*radius=*/30);
 				
 				window.addEventListener("keydown", keyPress);
@@ -146,13 +143,11 @@ var PickHeart = (function() {
 				togglePause();
 				//scoreCtx.clearRect(0,0,scoreCanvas.width,scoreCanvas.height);
 				tutorMaskCanvas.style.display = "block";
-
 				//msgCtx.font = "30px Quantico";
 				//msgCtx.fillStyle = "rgba(00, 00, 00, 1)";;
 				//msgCtx.fillText("Pick Up Heart to Increase HP",10,880);
 
 				msgCtx.drawImage(tutoralMsg03,10,800);
-
 				MaskCtx.fillStyle = "rgba(51, 51, 51, 0.6)";
 				MaskCtx.fillRect(0,0,stageW,stageW)
 				clearCircle(MaskCtx,/*x=*/pickupX,/*y=*/pickupY,/*radius=*/30);
@@ -173,9 +168,10 @@ var PickHeart = (function() {
 						togglePause();
 						MaskCtx.clearRect(0,0,stageW,stageW)
 						msgCtx.clearRect(0,0,stageW,stageW);
+						tutoralShown = false;
 						break;
-						default:
-						window.addEventListener("keydown", keyPress);
+						//default:
+						//window.addEventListener("keydown", keyPress);
 					}
 				}
 			
