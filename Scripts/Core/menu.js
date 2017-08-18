@@ -97,6 +97,8 @@ menuCanvas.addEventListener("mousemove", checkPos);
 menuCanvas.addEventListener("click", checkClick);
 muteBtCanvas.addEventListener("mousemove", muteBtOver);
 muteBtCanvas.addEventListener("click", muteBtClick);
+helpCanvas.addEventListener("mousemove",backBtnOver);
+helpCanvas.addEventListener("click",backBtClick);
 
 function loadMenu(){
     //muteBtCtx.drawImage(muteBt.image,990,100);
@@ -159,33 +161,32 @@ function muteBtOver(mouseEvent){
 }
 
 function muteBtClick(mouseEvent){
-    
-        mouseX = Math.floor((mouseEvent.offsetX/muteBtCanvas.offsetWidth)*stageW);
-        mouseY = Math.floor((mouseEvent.offsetY/muteBtCanvas.offsetHeight)*stageH);
-    
-        var setCursor;
-        var isHover = false;
-    
-        muteBtCtx.beginPath();
-        muteBtCtx.moveTo(gameMuteBt.points[0].x,gameMuteBt.points[0].y);
-        for(var i=0;i<gameMuteBt.points.length;i++){
-            muteBtCtx.lineTo(gameMuteBt.points[i].x,gameMuteBt.points[i].y);
-        }
-        muteBtCtx.closePath();
-        
-        if(muteBtCtx.isPointInPath(mouseX,mouseY)){
-            if(musicOn){
-                musicOn = false;
-                menuMusic.stop();
-                carIdle.stop();
-            }else{
-                musicOn = true;
-                menuMusic.play(); 
-                carIdle.play();
-            }
-        }
-    
+
+    mouseX = Math.floor((mouseEvent.offsetX/muteBtCanvas.offsetWidth)*stageW);
+    mouseY = Math.floor((mouseEvent.offsetY/muteBtCanvas.offsetHeight)*stageH);
+
+    var setCursor;
+    var isHover = false;
+
+    muteBtCtx.beginPath();
+    muteBtCtx.moveTo(gameMuteBt.points[0].x,gameMuteBt.points[0].y);
+    for(var i=0;i<gameMuteBt.points.length;i++){
+        muteBtCtx.lineTo(gameMuteBt.points[i].x,gameMuteBt.points[i].y);
     }
+    muteBtCtx.closePath();
+    
+    if(muteBtCtx.isPointInPath(mouseX,mouseY)){
+        if(musicOn){
+            musicOn = false;
+            menuMusic.stop();
+            carIdle.stop();
+        }else{
+            musicOn = true;
+            menuMusic.play(); 
+            carIdle.play();
+        }
+    }
+}
 
 
 function checkPos(mouseEvent){
@@ -272,7 +273,7 @@ function checkClick(mouseEvent){
                             startGame();
                         break;
                         case 1:
-                            helpCanvas.style.display = "block";
+                            helpScreen();
                         break;
                         case 2:
                             self.close();
@@ -282,6 +283,61 @@ function checkClick(mouseEvent){
         }
     }
 } 
+
+function backBtnOver(mouseEvent){
+
+    mouseX = Math.floor((mouseEvent.offsetX/helpCanvas.offsetWidth)*stageW);
+    mouseY = Math.floor((mouseEvent.offsetY/helpCanvas.offsetHeight)*stageH);
+
+    var setCursor;
+    var isHover = false;
+
+    helpCtx.beginPath();
+    helpCtx.moveTo(900,900);
+    helpCtx.lineTo(900+174,900);
+    helpCtx.lineTo(900+174,900+99);
+    helpCtx.lineTo(900,900+99);
+    helpCtx.closePath();
+    //helpCtx.stroke();
+    
+    if(helpCtx.isPointInPath(mouseX,mouseY)){
+        setCursor = "pointer";
+        isHover = true;
+        btSound.play();
+    }
+
+    if(!setCursor && !isHover){
+        helpCanvas.style.cursor = "default";   
+    }else{
+        isHover = true;
+        helpCanvas.style.cursor = "pointer";           
+    }
+}
+
+function backBtClick(mouseEvent){
+    
+    mouseX = Math.floor((mouseEvent.offsetX/helpCanvas.offsetWidth)*stageW);
+    mouseY = Math.floor((mouseEvent.offsetY/helpCanvas.offsetHeight)*stageH);
+    var setCursor;
+    var isHover = false;
+    
+    helpCtx.beginPath();
+    helpCtx.moveTo(900,900);
+    helpCtx.lineTo(900+174,900);
+    helpCtx.lineTo(900+174,900+99);
+    helpCtx.lineTo(900,900+99);
+    helpCtx.closePath();
+    //helpCtx.stroke();
+        
+    if(helpCtx.isPointInPath(mouseX,mouseY)){
+        helpCanvas.style.display = "none";
+    }
+}
+
+function helpScreen(){
+    helpCanvas.style.display = "block";
+    helpCtx.drawImage(backImg,900,900);
+}
 
 function startGame(){
     if( paused == true ){
@@ -340,6 +396,10 @@ function checkClick(mouseEvent){
 var crashImage = new Image();
 crashImage.addEventListener("load", loadHandler, false);
 crashImage.src = "Assets/images/endScreen_crash.png";
+
+var backImg = new Image();
+backImg.addEventListener("load", loadHandler, false);
+backImg.src = "Assets/images/bt_back.png";
 
 var endBtn = {
     x:300,
