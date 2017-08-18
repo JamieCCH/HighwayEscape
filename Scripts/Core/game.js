@@ -633,7 +633,7 @@ function countTrucksInPlay() //Tallies how many trucks are currently flagged as 
 
 function canSpawnTrucks()	//Simple gatekeeper function to ensure that there aren't too many obstacles for the player to avoid.
 {
-	if(trucksInPlay < 4 && paused == false && timeSec >= 1) // add one more condition to fix the trucks parallel spawning full lanes at the beginning.
+	if(trucksInPlay < 4 && paused == false && timeSec >= 10) // add one more condition to fix the trucks parallel spawning full lanes at the beginning.
 		return true;
 	else
 		return false;
