@@ -1,9 +1,9 @@
 # HighwayEscape
-Game Production II Project
+Game Production II Project of BearSpray <br>
 
-Debug code:
-[I/K]: +/- health
-[J/L]: +/- score
-p: pause
-tab: switch scene to night(can't switch back)
-esc: game over
+Debug code: <br>
+[I/K]: +/- health <br>
+[J/L]: +/- score <br>
+[p]: pause <br>
+[tab]: switch scene to night(can't switch back) <br>
+[esc]: game over <br>
